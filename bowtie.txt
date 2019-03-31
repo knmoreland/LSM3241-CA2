@@ -1,0 +1,41 @@
+##index reference genome. Use both yeast and transposon##
+bowtie2-build genome.fa,transposon.fa indexed
+
+##align the reads to the reference##
+bowtie2 -x indexed -1 A0193114M_1.fq -2 A0193114M_2.fq -S A0193114M_aligned.sam
+
+##use samtools to organize and view##
+samtools view -S -b A0193114M_aligned.sam > A0193114M_aligned.bam
+samtools sort A0193114M_aligned.bam -o A0193114M_aligned_sorted.bam
+
+##use flag 14 to isolate pairs of interest##
+samtools view -F 14 A0193114M_aligned.sam > A0193114M_view.sam
+
+##work in R to analyze insertions##
+library(xlsx)
+library(dplyr)
+library(tidyverse)
+
+setwd('C:/Users/knmor/Desktop/CA2/materials/given')
+getwd()
+
+samfile <- read_tsv("A0193114M_view.sam",col_names=FALSE)
+
+samfile %>% filter(X3=="chrIII" | X7=="chrIII") %>% arrange(X4) -> chr3
+head(chr3)
+samfile %>% filter(X3=="chrVIII" | X7=="chrVIII") %>% arrange(X4) -> chr8
+head(chr8)
+
+##processing for viewing##
+samtools view -S -b A0193114M_aligned.sam > A0193114M_view.bam
+samtools sort A0193114M_view.bam -o A0193114M_view_sorted.bam
+samtools index A0193114M_view_sorted.bam
+
+##download java 11##
+sudo add-apt-repository ppa:openjdk-r/ppa \
+&& sudo apt-get update -q \
+&& sudo apt install -y openjdk-11-jdk
+
+##install IGV 2.50##
+
+run on IGV
